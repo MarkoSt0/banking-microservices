@@ -19,6 +19,4 @@ Tech Stack
 
 
 Visual representation of decoupled microservices architecture, illustrating the communication flow between services via REST and Apache Kafka:
-
-!\[System Architecture Diagram](.docs/architecture.jpeg)
-
+<img width="1059" height="655" alt="MainDiagram" src="https://github.com/user-attachments/assets/3a19243a-f04d-4ae7-8e44-2ede3f3e5eb3" />
