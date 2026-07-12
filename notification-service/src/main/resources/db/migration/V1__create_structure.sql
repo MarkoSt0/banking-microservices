@@ -1,0 +1,6 @@
+CREATE TABLE notification(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    recipient_email VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT NOW()
+);

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  account-database:
+    image: postgres:15-alpine
+    container_name: bank-account-container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: account_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - account_data:/var/lib/postgresql/data
+  transaction-database:
+    image: postgres:15-alpine
+    container_name: bank-transaction-container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: transaction_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - transaction_data:/var/lib/postgresql/data
+  notification-database:
+    image: postgres:15-alpine
+    container_name: bank-notification-container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+volumes:
+  account_data:
+  transaction_data:
+  notification_data:
