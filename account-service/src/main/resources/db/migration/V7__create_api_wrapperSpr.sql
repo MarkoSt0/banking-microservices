@@ -28,7 +28,7 @@ $$;
 CREATE OR REPLACE PROCEDURE api.create_account(
     IN owner_name VARCHAR(100),
     IN initial_balance NUMERIC,
-    IN currency impl.currency_type,
+    IN currency VARCHAR(3),
     OUT account_id UUID
 )
 LANGUAGE plpgsql
@@ -55,7 +55,7 @@ BEGIN
     CALL spec.spr_createAccount(
         owner_name,
         initial_balance,
-        currency,
+        currency::impl.currency_type,
         account_id
     );
 
