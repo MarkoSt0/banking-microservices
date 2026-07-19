@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.util.UUID;
 
@@ -35,6 +36,22 @@ public class AccountRepo {
                     cs.execute();
                     return UUID.fromString(cs.getObject(4).toString());
                 }
+        );
+    }
+
+    public void updateBalance(UUID uuid, BigDecimal amount){
+        template.execute(
+                (CallableStatementCreator) con -> {
+                    CallableStatement cs = con.prepareCall(
+                            "CALL api.update_balance(?, ?)"
+                    );
+
+                    cs.setObject(1, uuid, Types.OTHER);
+                    cs.setBigDecimal(2, amount);
+
+                    return cs;
+                },
+                PreparedStatement::execute
         );
     }
 
