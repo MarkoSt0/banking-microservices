@@ -3,6 +3,7 @@ CREATE OR REPLACE PROCEDURE api.update_balance(
        IN amount NUMERIC
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS
 $$
 BEGIN
@@ -32,6 +33,7 @@ CREATE OR REPLACE PROCEDURE api.create_account(
     OUT account_id UUID
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS
 $$
 BEGIN

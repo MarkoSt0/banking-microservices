@@ -4,6 +4,7 @@ CREATE OR REPLACE PROCEDURE spec.spr_updateBalance(
 )
 
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS
 $$
 DECLARE
@@ -41,6 +42,7 @@ CREATE OR REPLACE PROCEDURE spec.spr_createAccount(
     OUT account_id UUID
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS
 $$
 BEGIN
