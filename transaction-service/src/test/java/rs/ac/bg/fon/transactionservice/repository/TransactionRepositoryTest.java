@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import rs.ac.bg.fon.transactionservice.TestcontainersConfiguration;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,6 +21,8 @@ public class TransactionRepositoryTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    private static final String reason = "Test reason message";
 
     private UUID createTransaction(BigDecimal amount){
         return transactionRepo.createTransaction(
@@ -59,6 +62,19 @@ public class TransactionRepositoryTest {
         assertNotNull(transactionId);
         assertNotNull(amount);
         assertEquals(0, amount.compareTo(BigDecimal.valueOf(10000)));
+    }
+
+    @Test
+    void shouldCreatePendingTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+
+        String status = jdbcTemplate.queryForObject(
+                "SELECT transaction_status FROM impl.money_transaction WHERE id = ?",
+                String.class,
+                transactionId
+        );
+
+        assertEquals("PENDING", status);
     }
 
     @Test
@@ -138,7 +154,7 @@ public class TransactionRepositoryTest {
                 transactionId
         );
         assertNotNull(status);
-        assertTrue(status.contains("COMPLETED"));
+        assertEquals("COMPLETED", status);
     }
 
     @Test
@@ -177,5 +193,98 @@ public class TransactionRepositoryTest {
         assertTrue(ex.getMessage().contains("Only pending transactions can be completed."));
     }
 
+    @Test
+    void shouldFailTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        transactionRepo.failTransaction(transactionId, reason);
+
+        Map<String, Object> result = jdbcTemplate.queryForMap(
+                "SELECT transaction_status, failure_reason FROM impl.money_transaction WHERE id = ?",
+                transactionId
+        );
+        assertNotNull(result);
+        assertEquals("FAILED", result.get("transaction_status"));
+        assertEquals(reason, result.get("failure_reason"));
+    }
+
+    @Test
+    void shouldThrowWhenFailingNullId(){
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        null,
+                        reason
+                )
+        );
+        assertTrue(ex.getMessage().contains("Transaction id cannot be null."));
+    }
+
+    @Test
+    void shouldThrowWhenFailingNullMessage(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        transactionId,
+                        null
+                )
+        );
+        assertTrue(ex.getMessage().contains("Failure reason cannot be null."));
+    }
+
+    @Test
+    void shouldThrowWhenFailingEmptyMessage(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        transactionId,
+                        ""
+                )
+        );
+        assertTrue(ex.getMessage().contains("Failure reason cannot be empty."));
+    }
+
+    @Test
+    void shouldThrowWhenFailingInvalidTransaction(){
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        UUID.randomUUID(),
+                        reason
+                )
+        );
+        assertTrue(ex.getMessage().contains("Transaction does not exist."));
+    }
+
+    @Test
+    void shouldThrowWhenFailingCompletedTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        transactionRepo.completeTransaction(transactionId);
+
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        transactionId,
+                        reason
+                )
+        );
+        assertTrue(ex.getMessage().contains("Only pending transactions can be failed."));
+    }
+
+    @Test
+    void shouldThrowWhenFailingFailedTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        transactionRepo.failTransaction(transactionId, reason);
+
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.failTransaction(
+                        transactionId,
+                        reason
+                )
+        );
+        assertTrue(ex.getMessage().contains("Only pending transactions can be failed."));
+    }
 }
 
