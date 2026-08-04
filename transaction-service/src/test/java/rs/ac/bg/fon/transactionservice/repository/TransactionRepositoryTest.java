@@ -21,34 +21,25 @@ public class TransactionRepositoryTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private UUID createTransaction(BigDecimal amount){
+        return transactionRepo.createTransaction(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                amount
+        );
+    }
+
     @Test
     void shouldCreateTransaction(){
-        UUID senderId = UUID.randomUUID();
-        UUID receiverId = UUID.randomUUID();
-        UUID transactionId = transactionRepo.createTransaction(
-                senderId,
-                receiverId,
-                BigDecimal.valueOf(10000)
-        );
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
 
         assertNotNull(transactionId);
     }
 
     @Test
     void shouldCreateMultipleTransaction(){
-        UUID senderId = UUID.randomUUID();
-        UUID receiverId = UUID.randomUUID();
-        UUID transactionId1 = transactionRepo.createTransaction(
-                senderId,
-                receiverId,
-                BigDecimal.valueOf(10000)
-        );
-
-        UUID transactionId2 = transactionRepo.createTransaction(
-                senderId,
-                receiverId,
-                BigDecimal.valueOf(12000)
-        );
+        UUID transactionId1 = createTransaction(BigDecimal.valueOf(10000));
+        UUID transactionId2 = createTransaction(BigDecimal.valueOf(12000));
 
         assertNotNull(transactionId1);
         assertNotNull(transactionId2);
@@ -57,13 +48,7 @@ public class TransactionRepositoryTest {
 
     @Test
     void shouldPersistCorrectAmount(){
-        UUID senderId = UUID.randomUUID();
-        UUID receiverId = UUID.randomUUID();
-        UUID transactionId = transactionRepo.createTransaction(
-                senderId,
-                receiverId,
-                BigDecimal.valueOf(10000)
-        );
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
 
         BigDecimal amount = jdbcTemplate.queryForObject(
                 "SELECT amount FROM impl.money_transaction WHERE id = ?",
@@ -140,6 +125,56 @@ public class TransactionRepositoryTest {
                 )
         );
         assertTrue(ex.getMessage().contains("Sender and receiver account cannot be the same."));
+    }
+
+    @Test
+    void shouldCompleteTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        transactionRepo.completeTransaction(transactionId);
+
+        String status = jdbcTemplate.queryForObject(
+                "SELECT transaction_status FROM impl.money_transaction WHERE id = ?",
+                String.class,
+                transactionId
+        );
+        assertNotNull(status);
+        assertTrue(status.contains("COMPLETED"));
+    }
+
+    @Test
+    void shouldThrowWhenCompletingNullId(){
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.completeTransaction(
+                        null
+                )
+        );
+        assertTrue(ex.getMessage().contains("Transaction id cannot be null."));
+    }
+
+    @Test
+    void shouldThrowWhenCompletingInvalidTransaction(){
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.completeTransaction(
+                        UUID.randomUUID()
+                )
+        );
+        assertTrue(ex.getMessage().contains("Transaction does not exist."));
+    }
+
+    @Test
+    void shouldThrowWhenCompletingNotPendingTransaction(){
+        UUID transactionId = createTransaction(BigDecimal.valueOf(10000));
+        transactionRepo.completeTransaction(transactionId);
+
+        DataAccessException ex = assertThrows(
+                DataAccessException.class,
+                () -> transactionRepo.completeTransaction(
+                        transactionId
+                )
+        );
+        assertTrue(ex.getMessage().contains("Only pending transactions can be completed."));
     }
 
 }

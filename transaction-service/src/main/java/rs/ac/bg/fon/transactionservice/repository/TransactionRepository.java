@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.util.UUID;
 
@@ -32,6 +33,33 @@ public class TransactionRepository {
                 cs.execute();
                 return UUID.fromString(cs.getObject(4).toString());
             }
+        );
+    }
+
+    public void completeTransaction(UUID transactionId){
+        template.execute(
+                (CallableStatementCreator) con -> {
+                    CallableStatement cs = con.prepareCall(
+                            "CALL api.spr_complete_transaction(?)"
+                    );
+                    cs.setObject(1, transactionId, Types.OTHER);
+                    return cs;
+                },
+                PreparedStatement::execute
+        );
+    }
+
+    public void failTransaction(UUID transactionId, String failureReason){
+        template.execute(
+                (CallableStatementCreator) con -> {
+                    CallableStatement cs = con.prepareCall(
+                            "CALL api.spr_fail_transaction(?,?)"
+                    );
+                    cs.setObject(1, transactionId, Types.OTHER);
+                    cs.setString(2, failureReason);
+                    return cs;
+                },
+                PreparedStatement::execute
         );
     }
 }
