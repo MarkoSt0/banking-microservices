@@ -1,6 +1,7 @@
 package rs.ac.bg.fon.accountservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import rs.ac.bg.fon.accountservice.dto.request.CreateAccountRequest;
 import rs.ac.bg.fon.accountservice.dto.request.UpdateBalanceRequest;
@@ -28,5 +29,13 @@ public class AccountService {
                 request.uuid(),
                 request.amount()
         );
+    }
+
+    @KafkaListener(
+            topics = "transfer-funds-commands",
+            groupId = "groupId"
+    )
+    void listener(String data){
+        System.out.println("Received data: " + data);
     }
 }
