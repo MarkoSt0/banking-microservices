@@ -10,7 +10,6 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic transferFundsCommands(){
-        System.out.println("Creating topic bean");
         return TopicBuilder.name("transfer-funds-commands").build();
     }
 }

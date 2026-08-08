@@ -5,6 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
+import rs.ac.bg.fon.transactionservice.dto.command.TransferFundsCommand;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @SpringBootApplication
 public class TransactionServiceApplication {
@@ -14,9 +18,14 @@ public class TransactionServiceApplication {
 	}
 
 	@Bean
-	CommandLineRunner commandLineRunner(KafkaTemplate<String, String> kafkaTemplate){
+	CommandLineRunner commandLineRunner(KafkaTemplate<String, TransferFundsCommand> kafkaTemplate){
 		return args -> {
-			kafkaTemplate.send("transfer-funds-commands", "test message");
+			TransferFundsCommand command = new TransferFundsCommand(
+					UUID.randomUUID(),
+					UUID.randomUUID(),
+					BigDecimal.valueOf(10000)
+			);
+			kafkaTemplate.send("transfer-funds-commands", command);
 		};
 	}
 }
