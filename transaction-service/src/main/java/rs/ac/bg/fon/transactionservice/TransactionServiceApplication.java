@@ -17,15 +17,4 @@ public class TransactionServiceApplication {
 		SpringApplication.run(TransactionServiceApplication.class, args);
 	}
 
-	@Bean
-	CommandLineRunner commandLineRunner(KafkaTemplate<String, TransferFundsCommand> kafkaTemplate){
-		return args -> {
-			TransferFundsCommand command = new TransferFundsCommand(
-					UUID.randomUUID(),
-					UUID.randomUUID(),
-					BigDecimal.valueOf(10000)
-			);
-			kafkaTemplate.send("transfer-funds-commands", command);
-		};
-	}
 }

@@ -12,7 +12,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
-import rs.ac.bg.fon.accountservice.command.TransferFundsCommand;
+import rs.ac.bg.fon.accountservice.dto.command.TransferFundsCommand;
 
 import java.util.HashMap;
 import java.util.Map;

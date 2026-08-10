@@ -1,4 +1,4 @@
-package rs.ac.bg.fon.accountservice.command;
+package rs.ac.bg.fon.accountservice.dto.command;
 
 import java.math.BigDecimal;
 import java.util.UUID;
