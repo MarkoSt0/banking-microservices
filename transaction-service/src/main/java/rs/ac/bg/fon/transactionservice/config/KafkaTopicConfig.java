@@ -12,4 +12,9 @@ public class KafkaTopicConfig {
     public NewTopic transferFundsCommands(){
         return TopicBuilder.name("transfer-funds-commands").build();
     }
+
+    @Bean
+    public NewTopic transferFundsResults(){
+        return TopicBuilder.name("transfer-funds-results").build();
+    }
 }

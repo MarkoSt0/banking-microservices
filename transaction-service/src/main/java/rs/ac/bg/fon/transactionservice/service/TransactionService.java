@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import rs.ac.bg.fon.transactionservice.dto.command.TransferFundsCommand;
+import rs.ac.bg.fon.transactionservice.dto.event.TransferFundsResult;
 import rs.ac.bg.fon.transactionservice.dto.request.CreateTransactionRequest;
 import rs.ac.bg.fon.transactionservice.dto.response.CreateTransactionResponse;
+import rs.ac.bg.fon.transactionservice.enums.TransferStatus;
 import rs.ac.bg.fon.transactionservice.repository.TransactionRepository;
 
 import java.math.BigDecimal;
@@ -30,20 +32,22 @@ public class TransactionService {
 
         // 2. Sent command to topic(Kafka)
         TransferFundsCommand command = new TransferFundsCommand(
+                transactionId,
                 senderAccountId,
                 receiverAccountId,
                 amount
         );
         kafkaTemplate.send("transfer-funds-commands", command);
 
-        // 3. Check result from kafka
-
-        // 4. Complete or fail transaction
-        completeTransaction(transactionId);
-
-        // 5. Send command to Notification Microservice
-
         return new CreateTransactionResponse(transactionId);
+    }
+
+    public void processTransferResult(TransferFundsResult result){
+        if(result.status() == TransferStatus.SUCCESS){
+            completeTransaction(result.transactionId());
+        }else{
+            failTransaction(result.transactionId(), result.errorCode());
+        }
     }
 
     private UUID createTransaction(UUID senderAccountId, UUID receiverAccountId, BigDecimal amount){
@@ -56,5 +60,8 @@ public class TransactionService {
 
     private void completeTransaction(UUID transactionId){
         transactionRepository.completeTransaction(transactionId);
+    }
+    private void failTransaction(UUID transactionId, String message){
+        transactionRepository.failTransaction(transactionId, message);
     }
 }

@@ -1,11 +1,14 @@
 package rs.ac.bg.fon.accountservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import rs.ac.bg.fon.accountservice.dto.command.TransferFundsCommand;
+import rs.ac.bg.fon.accountservice.dto.event.TransferFundsResult;
 import rs.ac.bg.fon.accountservice.dto.request.CreateAccountRequest;
 import rs.ac.bg.fon.accountservice.dto.request.UpdateBalanceRequest;
 import rs.ac.bg.fon.accountservice.dto.response.AccountResponse;
+import rs.ac.bg.fon.accountservice.enums.TransferStatus;
 import rs.ac.bg.fon.accountservice.repository.AccountRepo;
 
 import java.util.UUID;
@@ -13,7 +16,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
     private final AccountRepo accountRepo;
+    private final KafkaTemplate<String, TransferFundsResult> kafkaTemplate;
 
     public AccountResponse createAccount(CreateAccountRequest createRequest){
         UUID uuid = accountRepo.createAccount(
@@ -34,6 +39,11 @@ public class AccountService {
     public void processTransfer(TransferFundsCommand command) {
         deductFromSender(command);
         addToReceiver(command);
+
+        kafkaTemplate.send(
+                "transfer-funds-results",
+                new TransferFundsResult(command.transactionId(), TransferStatus.SUCCESS, null)
+        );
     }
 
     private void deductFromSender(TransferFundsCommand command){

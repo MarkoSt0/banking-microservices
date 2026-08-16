@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record TransferFundsCommand(
-    UUID senderAccountId,
-    UUID receiverAccountId,
-    BigDecimal amount
+        UUID transactionId,
+        UUID senderAccountId,
+        UUID receiverAccountId,
+        BigDecimal amount
 ) { }
