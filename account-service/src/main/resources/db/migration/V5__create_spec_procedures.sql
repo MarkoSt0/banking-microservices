@@ -19,12 +19,12 @@ BEGIN
 
 --     Verify account exists
     IF NOT FOUND THEN
-           RAISE EXCEPTION 'Account does not exists.';
+           RAISE EXCEPTION USING ERRCODE = 'P1001', MESSAGE = 'Account does not exists.';
     END IF;
 
 --     Verify sufficient funds
     IF current_balance + amount < 0 THEN
-        RAISE EXCEPTION 'Insufficient funds.';
+        RAISE EXCEPTION USING ERRCODE = 'P1002', MESSAGE = 'Insufficient funds.';
     END IF;
 
 --     Update account balance

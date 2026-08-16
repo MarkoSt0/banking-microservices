@@ -8,7 +8,7 @@ AS
 $$
 BEGIN
     IF account_id IS NULL THEN
-        RAISE EXCEPTION 'Account id cannot be null.';
+        RAISE EXCEPTION USING ERRCODE = 'P1003', MESSAGE = 'Account id cannot be null.';
     END IF;
 
     RETURN spec.fnc_getBalance(account_id);

@@ -8,6 +8,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import rs.ac.bg.fon.accountservice.TestcontainersConfiguration;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,8 +60,6 @@ public class AccountRepoTest {
         assertNotEquals(id1, id2);
     }
 
-//    Better solution is to use error code in database and to check that code
-
     @Test
     void shouldThrowWhenCreatingEmptyOwnerName(){
         DataAccessException ex = assertThrows(
@@ -71,8 +70,11 @@ public class AccountRepoTest {
                         "RSD"
                 )
         );
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
 
-        assertTrue(ex.getMessage().contains("Owner name cannot be empty."));
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1005", sqlException.getSQLState());
     }
 
     @Test
@@ -85,8 +87,11 @@ public class AccountRepoTest {
                         "RSD"
                 )
         );
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
 
-        assertTrue(ex.getMessage().contains("Owner name cannot be empty."));
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1005", sqlException.getSQLState());
     }
 
     @Test
@@ -99,7 +104,11 @@ public class AccountRepoTest {
                         "RSD"
                 )
         );
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
 
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1002", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Initial balance cannot be null."));
     }
 
@@ -113,7 +122,11 @@ public class AccountRepoTest {
                         "USD"
                 )
         );
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
 
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1002", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Initial balance cannot be negative."));
     }
 
@@ -128,6 +141,11 @@ public class AccountRepoTest {
                 )
         );
 
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
+
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1006", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Currency cannot be null."));
     }
 
@@ -181,6 +199,11 @@ public class AccountRepoTest {
                 )
         );
 
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
+
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1003", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Account id cannot be null."));
     }
 
@@ -196,6 +219,11 @@ public class AccountRepoTest {
                 )
         );
 
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
+
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1004", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Amount cannot be null."));
     }
 
@@ -215,6 +243,11 @@ public class AccountRepoTest {
                 )
         );
 
+        assertInstanceOf(SQLException.class, ex.getMostSpecificCause());
+
+        SQLException sqlException = (SQLException) ex.getMostSpecificCause();
+
+        assertEquals("P1004", sqlException.getSQLState());
         assertTrue(ex.getMessage().contains("Amount cannot be zero."));
     }
 }
